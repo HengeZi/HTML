@@ -1,0 +1,859 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans SC', sans-serif; }
+  .app { display: flex; height: 100vh; min-height: 600px; background: var(--color-background-tertiary); font-size: 14px; color: var(--color-text-primary); }
+  
+  .sidebar { width: 220px; min-width: 220px; background: var(--color-background-primary); border-right: 0.5px solid var(--color-border-tertiary); display: flex; flex-direction: column; padding: 16px 0; }
+  .sidebar-logo { padding: 0 16px 20px; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 12px; }
+  .logo-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+  .logo-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  
+  .nav-section { padding: 0 8px; margin-bottom: 4px; }
+  .nav-label { font-size: 10px; color: var(--color-text-tertiary); padding: 4px 8px 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--border-radius-md); cursor: pointer; font-size: 13px; color: var(--color-text-secondary); border: none; background: none; width: 100%; text-align: left; transition: all 0.15s; }
+  .nav-item:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .nav-item.active { background: #E6F1FB; color: #185FA5; font-weight: 500; }
+  .nav-item i { font-size: 16px; }
+  .nav-badge { margin-left: auto; background: #E24B4A; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 500; }
+
+  .main { flex: 1; overflow-y: auto; }
+  .page { display: none; padding: 24px; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 20px; }
+  .page-title { font-size: 20px; font-weight: 500; }
+  .page-desc { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px 20px; margin-bottom: 12px; }
+  .card-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+  .hci-tip { background: #FAEEDA; border-left: 3px solid #EF9F27; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; padding: 8px 12px; margin-top: 12px; }
+  .hci-tip-label { font-size: 10px; font-weight: 500; color: #854F0B; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+  .hci-tip-text { font-size: 12px; color: #633806; line-height: 1.5; }
+
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .badge-blue { background: #E6F1FB; color: #185FA5; }
+  .badge-green { background: #EAF3DE; color: #3B6D11; }
+  .badge-amber { background: #FAEEDA; color: #854F0B; }
+  .badge-red { background: #FCEBEB; color: #A32D2D; }
+  .badge-gray { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 5px; display: block; }
+  .form-label .required { color: #E24B4A; margin-left: 2px; }
+  .form-input { width: 100%; padding: 8px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; color: var(--color-text-primary); background: var(--color-background-primary); }
+  .form-textarea { width: 100%; padding: 8px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; resize: vertical; min-height: 80px; color: var(--color-text-primary); background: var(--color-background-primary); }
+  .form-hint { font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); font-weight: 500; }
+  .btn-primary { background: #185FA5; color: #fff; border-color: #185FA5; }
+  .btn-danger { background: #FCEBEB; color: #A32D2D; border-color: #F7C1C1; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table th { text-align: left; font-size: 11px; color: var(--color-text-secondary); font-weight: 500; padding: 0 12px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .table td { padding: 10px 12px; border-bottom: 0.5px solid var(--color-border-tertiary); vertical-align: middle; }
+  .table tr:last-child td { border-bottom: none; }
+  .table tr:hover td { background: var(--color-background-secondary); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+  .stat-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .stat-num { font-size: 22px; font-weight: 500; }
+  .stat-num.blue { color: #185FA5; }
+  .stat-num.green { color: #3B6D11; }
+  .stat-num.red { color: #A32D2D; }
+
+  .hw-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .hw-item:last-child { border-bottom: none; }
+  .hw-icon { width: 36px; height: 36px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .hw-icon.blue { background: #E6F1FB; color: #185FA5; }
+  .hw-icon.amber { background: #FAEEDA; color: #854F0B; }
+  .hw-icon.gray { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+  .hw-meta { flex: 1; min-width: 0; }
+  .hw-title { font-weight: 500; font-size: 14px; margin-bottom: 3px; }
+  .hw-info { font-size: 12px; color: var(--color-text-secondary); }
+  .hw-actions { display: flex; align-items: center; gap: 6px; }
+
+  .deadline-urgent { color: #A32D2D; font-weight: 500; }
+  .deadline-ok { color: #3B6D11; }
+
+  .upload-zone { border: 1.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 24px; text-align: center; background: var(--color-background-secondary); cursor: pointer; }
+  .upload-icon { font-size: 28px; color: var(--color-text-tertiary); margin-bottom: 8px; }
+  .upload-text { font-size: 13px; color: var(--color-text-secondary); }
+  .upload-hint { font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px; }
+
+  .login-wrap { min-height: 100%; display: flex; align-items: center; justify-content: center; background: var(--color-background-secondary); padding: 40px; }
+  .login-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-xl); padding: 36px; width: 340px; }
+  .login-logo { text-align: center; margin-bottom: 28px; }
+  .login-title { font-size: 18px; font-weight: 500; text-align: center; margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: var(--color-text-secondary); text-align: center; margin-bottom: 24px; }
+  .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .role-btn { padding: 10px; border-radius: var(--border-radius-md); border: 1.5px solid var(--color-border-tertiary); text-align: center; cursor: pointer; font-size: 13px; color: var(--color-text-secondary); }
+  .role-btn.selected { border-color: #185FA5; background: #E6F1FB; color: #185FA5; font-weight: 500; }
+  .role-btn i { display: block; font-size: 22px; margin-bottom: 4px; }
+  .forgot-link { font-size: 12px; color: #185FA5; text-align: right; display: block; margin-top: 4px; cursor: pointer; }
+  .error-msg { background: #FCEBEB; border: 0.5px solid #F7C1C1; border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 12px; color: #A32D2D; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+  .progress-bar-wrap { background: var(--color-background-secondary); border-radius: 4px; height: 6px; margin-top: 6px; }
+  .progress-bar { height: 6px; border-radius: 4px; background: #639922; }
+
+  .steps { display: flex; align-items: center; gap: 0; margin-bottom: 20px; }
+  .step { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; border: 1.5px solid var(--color-border-secondary); color: var(--color-text-secondary); }
+  .step.done .step-num { background: #639922; color: #fff; border-color: #639922; }
+  .step.active .step-num { background: #185FA5; color: #fff; border-color: #185FA5; }
+  .step-label { color: var(--color-text-secondary); }
+  .step.active .step-label { color: var(--color-text-primary); font-weight: 500; }
+  .step-line { flex: 1; height: 1px; background: var(--color-border-tertiary); margin: 0 8px; min-width: 20px; }
+
+  .success-screen { text-align: center; padding: 40px 20px; }
+  .success-icon { width: 56px; height: 56px; background: #EAF3DE; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 26px; color: #3B6D11; }
+
+  .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 16px 0; }
+
+  .annotation { position: relative; }
+  .annotation-num { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background: #EF9F27; color: #fff; border-radius: 50%; font-size: 9px; font-weight: 700; cursor: default; vertical-align: middle; margin-left: 4px; }
+  
+  .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 0; }
+  .info-label { width: 90px; color: var(--color-text-secondary); flex-shrink: 0; font-size: 12px; }
+  .info-val { color: var(--color-text-primary); }
+
+  .tag-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+  .notification-dot { width: 6px; height: 6px; background: #E24B4A; border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
+
+  .checklist-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .checklist-item:last-child { border-bottom: none; }
+  .check-box { width: 16px; height: 16px; border: 1.5px solid var(--color-border-secondary); border-radius: 3px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+  .check-box.checked { background: #639922; border-color: #639922; color: #fff; font-size: 10px; }
+
+  .tab-bar { display: flex; gap: 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 16px; }
+  .tab { padding: 8px 14px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--color-text-secondary); margin-bottom: -0.5px; }
+  .tab.active { border-bottom-color: #185FA5; color: #185FA5; font-weight: 500; }
+
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: #E6F1FB; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #185FA5; flex-shrink: 0; }
+
+  .submitted-file { display: flex; align-items: center; gap: 10px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; margin-top: 8px; }
+</style>
+
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+
+<h2 class="sr-only">课程作业管理系统——交互设计原型，包含登录、教师端、学生端共7个页面</h2>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title"><i class="ti ti-school" style="font-size:16px;vertical-align:-2px;margin-right:4px" aria-hidden="true"></i>作业管理系统</div>
+      <div class="logo-sub">合肥大学 · 人机交互课</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">公共页面</div>
+      <button class="nav-item active" onclick="showPage('login')" id="nav-login">
+        <i class="ti ti-login" aria-hidden="true"></i> 登录页
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">教师端</div>
+      <button class="nav-item" onclick="showPage('t-list')" id="nav-t-list">
+        <i class="ti ti-list-check" aria-hidden="true"></i> 作业列表
+      </button>
+      <button class="nav-item" onclick="showPage('t-create')" id="nav-t-create">
+        <i class="ti ti-plus" aria-hidden="true"></i> 发布作业
+      </button>
+      <button class="nav-item" onclick="showPage('t-submissions')" id="nav-t-submissions">
+        <i class="ti ti-users" aria-hidden="true"></i> 提交情况
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">学生端</div>
+      <button class="nav-item" onclick="showPage('s-list')" id="nav-s-list">
+        <i class="ti ti-home" aria-hidden="true"></i> 我的作业
+      </button>
+      <button class="nav-item" onclick="showPage('s-detail')" id="nav-s-detail">
+        <i class="ti ti-file-description" aria-hidden="true"></i> 作业详情
+      </button>
+      <button class="nav-item" onclick="showPage('s-submit')" id="nav-s-submit">
+        <i class="ti ti-upload" aria-hidden="true"></i> 提交作业
+      </button>
+    </div>
+
+    <div style="margin-top:auto;padding:12px 16px;border-top:0.5px solid var(--color-border-tertiary)">
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:6px">设计原型 · 仅供参考</div>
+      <div style="font-size:10px;color:var(--color-text-tertiary)">🟡 标注 = HCI考察点</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- 登录页 -->
+    <div class="page active" id="page-login">
+      <div class="login-wrap">
+        <div>
+          <div class="login-card">
+            <div class="login-logo">
+              <i class="ti ti-school" style="font-size:36px;color:#185FA5" aria-hidden="true"></i>
+            </div>
+            <div class="login-title">课程作业管理系统</div>
+            <div class="login-sub">合肥大学 · 人机交互的软件工程方法学</div>
+
+            <div class="role-selector">
+              <div class="role-btn selected" id="role-teacher" onclick="selectRole('teacher')">
+                <i class="ti ti-user-circle" aria-hidden="true"></i>
+                教师登录
+              </div>
+              <div class="role-btn" id="role-student" onclick="selectRole('student')">
+                <i class="ti ti-school" aria-hidden="true"></i>
+                学生登录
+              </div>
+            </div>
+
+            <div class="error-msg" id="err-msg" style="display:none">
+              <i class="ti ti-alert-circle" style="font-size:14px" aria-hidden="true"></i>
+              账号或密码错误，请重新输入
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">账号<span class="required">*</span></label>
+              <input class="form-input" type="text" placeholder="请输入工号/学号">
+            </div>
+            <div class="form-group">
+              <label class="form-label">密码<span class="required">*</span></label>
+              <input class="form-input" type="password" placeholder="请输入密码">
+              <a class="forgot-link">忘记密码？</a>
+            </div>
+
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="showErrDemo()">
+              <i class="ti ti-login" aria-hidden="true"></i> 登录
+            </button>
+
+            <div style="margin-top:16px;text-align:center;font-size:11px;color:var(--color-text-tertiary)">
+              首次登录请联系教师获取初始密码
+            </div>
+          </div>
+
+          <div class="hci-tip" style="margin-top:12px;max-width:340px">
+            <div class="hci-tip-label">🟡 HCI 考察点（登录页）</div>
+            <div class="hci-tip-text">
+              <b>①</b> 身份选择的视觉区分——角色切换是否清晰、是否误触？<br>
+              <b>②</b> 错误提示友好性——报错时是否说清原因、是否定位到出错字段？<br>
+              <b>③</b> 错误恢复路径——"忘记密码"的可见性与可达性<br>
+              <b>④</b> 表单的必填项标注与默认焦点设置
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 教师：作业列表 -->
+    <div class="page" id="page-t-list">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="page-title">作业列表</div>
+            <div class="page-desc">管理已发布的所有作业</div>
+          </div>
+          <button class="btn btn-primary" onclick="showPage('t-create')">
+            <i class="ti ti-plus" aria-hidden="true"></i> 发布新作业
+          </button>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">已发布</div>
+          <div class="stat-num blue">4</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">进行中</div>
+          <div class="stat-num green">2</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">已截止</div>
+          <div class="stat-num" style="color:var(--color-text-secondary)">2</div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab active">全部</div>
+        <div class="tab">进行中</div>
+        <div class="tab">已截止</div>
+      </div>
+
+      <div class="card" style="padding:0 20px">
+        <div class="hw-item">
+          <div class="hw-icon blue"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+          <div class="hw-meta">
+            <div class="hw-title">实验一：交互设计原型制作 <span class="badge badge-green">进行中</span></div>
+            <div class="hw-info">截止时间：2026-05-20 23:59 &nbsp;·&nbsp; 已提交 <b>18</b>/32 人</div>
+            <div class="progress-bar-wrap" style="width:180px">
+              <div class="progress-bar" style="width:56%"></div>
+            </div>
+          </div>
+          <div class="hw-actions">
+            <button class="btn btn-sm" onclick="showPage('t-submissions')"><i class="ti ti-users" aria-hidden="true"></i> 提交情况</button>
+          </div>
+        </div>
+
+        <div class="hw-item">
+          <div class="hw-icon amber"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+          <div class="hw-meta">
+            <div class="hw-title">实验二：需求分析报告 <span class="badge badge-amber">即将截止</span></div>
+            <div class="hw-info">截止时间：<span class="deadline-urgent">2026-05-15 23:59（剩余1天）</span> &nbsp;·&nbsp; 已提交 <b>8</b>/32 人</div>
+            <div class="progress-bar-wrap" style="width:180px">
+              <div class="progress-bar" style="width:25%;background:#EF9F27"></div>
+            </div>
+          </div>
+          <div class="hw-actions">
+            <button class="btn btn-sm" onclick="showPage('t-submissions')"><i class="ti ti-users" aria-hidden="true"></i> 提交情况</button>
+          </div>
+        </div>
+
+        <div class="hw-item">
+          <div class="hw-icon gray"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+          <div class="hw-meta">
+            <div class="hw-title">课后练习：交互风格分析 <span class="badge badge-gray">已截止</span></div>
+            <div class="hw-info">截止时间：2026-05-08 23:59 &nbsp;·&nbsp; 已提交 <b>30</b>/32 人</div>
+            <div class="progress-bar-wrap" style="width:180px">
+              <div class="progress-bar" style="width:94%;background:#639922"></div>
+            </div>
+          </div>
+          <div class="hw-actions">
+            <button class="btn btn-sm" onclick="showPage('t-submissions')"><i class="ti ti-users" aria-hidden="true"></i> 提交情况</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hci-tip">
+        <div class="hci-tip-label">🟡 HCI 考察点（教师作业列表）</div>
+        <div class="hci-tip-text">
+          <b>①</b> 系统状态可见性——进度条是否让教师一眼看出提交率？<br>
+          <b>②</b> 信息层次与密度——最重要信息（截止时间、提交人数）是否突出？<br>
+          <b>③</b> 紧急状态的视觉区分——"即将截止"与"已截止"的颜色、标签是否够直观？<br>
+          <b>④</b> 筛选/排序——教师是否能快速找到需要关注的作业？
+        </div>
+      </div>
+    </div>
+
+    <!-- 教师：发布作业 -->
+    <div class="page" id="page-t-create">
+      <div class="page-header">
+        <div class="page-title">发布新作业</div>
+        <div class="page-desc">填写作业信息后发布给全班学生</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start">
+        <div>
+          <div class="steps" style="margin-bottom:20px">
+            <div class="step done"><div class="step-num"><i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i></div><span class="step-label">基本信息</span></div>
+            <div class="step-line"></div>
+            <div class="step active"><div class="step-num">2</div><span class="step-label">附件与要求</span></div>
+            <div class="step-line"></div>
+            <div class="step"><div class="step-num">3</div><span class="step-label">预览确认</span></div>
+          </div>
+
+          <div class="card">
+            <div class="form-group">
+              <label class="form-label">作业标题<span class="required">*</span></label>
+              <input class="form-input" type="text" value="实验三：Web界面设计与实现">
+            </div>
+            <div class="form-group">
+              <label class="form-label">作业描述<span class="required">*</span></label>
+              <textarea class="form-textarea">请各组按照提供的设计图，独立实现课程作业管理系统的学生端页面，包括：作业列表、作业详情、提交作业三个页面。要求代码规范、界面美观、交互流畅，并标注各页面体现的HCI设计原则。</textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group">
+                <label class="form-label">开放时间<span class="required">*</span></label>
+                <input class="form-input" type="datetime-local" value="2026-05-14T09:00">
+              </div>
+              <div class="form-group">
+                <label class="form-label">截止时间<span class="required">*</span></label>
+                <input class="form-input" type="datetime-local" value="2026-05-28T23:59">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">提交要求</label>
+              <input class="form-input" type="text" placeholder="如：压缩包，含源码+实验报告PDF，不超过50MB">
+              <div class="form-hint">格式说明会显示在学生提交页，请填写清楚</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">上传附件（题目材料）</label>
+              <div class="upload-zone">
+                <div class="upload-icon"><i class="ti ti-upload" aria-hidden="true"></i></div>
+                <div class="upload-text">点击或拖拽文件到此处</div>
+                <div class="upload-hint">支持 PDF、Word、图片，单文件不超过 20MB</div>
+              </div>
+              <div style="margin-top:8px">
+                <div class="submitted-file">
+                  <i class="ti ti-file-type-pdf" style="font-size:18px;color:#A32D2D" aria-hidden="true"></i>
+                  <span style="flex:1;font-size:12px">实验三-设计图参考.pdf</span>
+                  <span style="font-size:11px;color:var(--color-text-tertiary)">2.3 MB</span>
+                  <button class="btn btn-sm btn-danger"><i class="ti ti-trash" style="font-size:12px" aria-hidden="true"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+            <div style="display:flex;justify-content:space-between">
+              <button class="btn"><i class="ti ti-arrow-left" aria-hidden="true"></i> 上一步</button>
+              <div style="display:flex;gap:8px">
+                <button class="btn"><i class="ti ti-eye" aria-hidden="true"></i> 预览</button>
+                <button class="btn btn-primary"><i class="ti ti-send" aria-hidden="true"></i> 下一步：确认发布</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="hci-tip" style="margin-bottom:12px">
+            <div class="hci-tip-label">🟡 HCI 考察点（发布作业页）</div>
+            <div class="hci-tip-text">
+              <b>①</b> 分步骤引导（步骤条）——减少一次性信息量，降低认知负荷<br>
+              <b>②</b> 防错原则——截止时间能否早于当前时间？系统是否拦截？<br>
+              <b>③</b> 预览确认步骤——发布前让教师看到最终效果，防止误操作<br>
+              <b>④</b> 必填项标注（红色*）——让用户知道哪些不能留空<br>
+              <b>⑤</b> 提示文字（占位符/hint）——减少用户猜测
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-eye" style="font-size:15px;color:#185FA5" aria-hidden="true"></i> 发布预览</div>
+            <div style="font-size:13px;font-weight:500;margin-bottom:6px">实验三：Web界面设计与实现</div>
+            <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.6">截止：2026-05-28 23:59<br>附件：1个文件</div>
+            <div style="margin-top:8px">
+              <span class="badge badge-green">将发布给 2 个班级</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 教师：提交情况 -->
+    <div class="page" id="page-t-submissions">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="page-title">提交情况</div>
+            <div class="page-desc">实验一：交互设计原型制作 &nbsp;·&nbsp; 截止 2026-05-20</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm"><i class="ti ti-download" aria-hidden="true"></i> 导出名单</button>
+            <button class="btn btn-sm"><i class="ti ti-refresh" aria-hidden="true"></i> 刷新</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card">
+          <div class="stat-label">全班人数</div>
+          <div class="stat-num">32</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">已提交</div>
+          <div class="stat-num green">18</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">未提交</div>
+          <div class="stat-num red">14</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">提交率</div>
+          <div class="stat-num blue">56%</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0">
+        <div style="padding:12px 20px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between">
+          <div class="tab-bar" style="border-bottom:none;margin-bottom:0">
+            <div class="tab active">全部 (32)</div>
+            <div class="tab" style="color:#3B6D11">已提交 (18)</div>
+            <div class="tab" style="color:#A32D2D">未提交 (14)</div>
+          </div>
+          <input class="form-input" type="text" placeholder="搜索学号/姓名" style="width:160px;padding:5px 10px;font-size:12px">
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>学生</th>
+              <th>学号</th>
+              <th>提交时间</th>
+              <th>附件</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">张三</div> 张三</div></td>
+              <td style="color:var(--color-text-secondary)">2023001</td>
+              <td style="color:var(--color-text-secondary)">05-12 14:32</td>
+              <td><a style="font-size:12px;color:#185FA5"><i class="ti ti-file" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> 实验报告.zip</a></td>
+              <td><span class="badge badge-green"><i class="ti ti-check" style="font-size:11px" aria-hidden="true"></i> 已提交</span></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">李四</div> 李四</div></td>
+              <td style="color:var(--color-text-secondary)">2023002</td>
+              <td style="color:var(--color-text-secondary)">05-13 22:15</td>
+              <td><a style="font-size:12px;color:#185FA5"><i class="ti ti-file" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> group2.zip</a></td>
+              <td><span class="badge badge-green"><i class="ti ti-check" style="font-size:11px" aria-hidden="true"></i> 已提交</span></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">王五</div> 王五</div></td>
+              <td style="color:var(--color-text-secondary)">2023003</td>
+              <td style="color:var(--color-text-tertiary)">——</td>
+              <td style="color:var(--color-text-tertiary)">——</td>
+              <td><span class="badge badge-red"><i class="ti ti-clock" style="font-size:11px" aria-hidden="true"></i> 未提交</span></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">赵六</div> 赵六</div></td>
+              <td style="color:var(--color-text-secondary)">2023004</td>
+              <td style="color:var(--color-text-tertiary)">——</td>
+              <td style="color:var(--color-text-tertiary)">——</td>
+              <td><span class="badge badge-red"><i class="ti ti-clock" style="font-size:11px" aria-hidden="true"></i> 未提交</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:10px 20px;font-size:12px;color:var(--color-text-tertiary);border-top:0.5px solid var(--color-border-tertiary)">显示第 1-4 条，共 32 条</div>
+      </div>
+
+      <div class="hci-tip">
+        <div class="hci-tip-label">🟡 HCI 考察点（提交情况页）</div>
+        <div class="hci-tip-text">
+          <b>①</b> 数据可读性——表格列宽、对齐方式是否让扫描变容易？<br>
+          <b>②</b> 状态一致性——"已提交"/"未提交"的颜色语义是否全系统统一？<br>
+          <b>③</b> 筛选与搜索——教师能否快速过滤出未提交的学生？<br>
+          <b>④</b> 空状态设计——若所有人都未提交，页面应显示什么？
+        </div>
+      </div>
+    </div>
+
+    <!-- 学生：作业列表 -->
+    <div class="page" id="page-s-list">
+      <div class="page-header">
+        <div class="page-title">我的作业</div>
+        <div class="page-desc">2025-2026学年第2学期 · 人机交互的软件工程方法学</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">待完成</div>
+          <div class="stat-num red">2</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">已提交</div>
+          <div class="stat-num green">2</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">本周截止</div>
+          <div class="stat-num amber">1</div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab active">全部</div>
+        <div class="tab">待完成 <span class="notification-dot"></span></div>
+        <div class="tab">已提交</div>
+      </div>
+
+      <div class="card" style="padding:0 20px">
+        <div class="hw-item">
+          <div class="hw-icon" style="background:#FCEBEB;color:#A32D2D"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div>
+          <div class="hw-meta">
+            <div class="hw-title">实验二：需求分析报告</div>
+            <div class="hw-info">截止：<span class="deadline-urgent">明天 23:59（剩余 1 天 8 小时）</span></div>
+            <div class="tag-list"><span class="badge badge-red">⚠ 即将截止</span><span class="badge badge-gray">未提交</span></div>
+          </div>
+          <div class="hw-actions">
+            <button class="btn btn-primary btn-sm" onclick="showPage('s-detail')">去提交</button>
+          </div>
+        </div>
+
+        <div class="hw-item">
+          <div class="hw-icon blue"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+          <div class="hw-meta">
+            <div class="hw-title">实验三：Web界面设计与实现</div>
+            <div class="hw-info">截止：<span class="deadline-ok">2026-05-28 23:59（剩余 14 天）</span></div>
+            <div class="tag-list"><span class="badge badge-blue">进行中</span><span class="badge badge-gray">未提交</span></div>
+          </div>
+          <div class="hw-actions">
+            <button class="btn btn-sm" onclick="showPage('s-detail')">查看</button>
+          </div>
+        </div>
+
+        <div class="hw-item">
+          <div class="hw-icon" style="background:#EAF3DE;color:#3B6D11"><i class="ti ti-check" aria-hidden="true"></i></div>
+          <div class="hw-meta">
+            <div class="hw-title">实验一：交互设计原型制作</div>
+            <div class="hw-info">截止：2026-05-08 &nbsp;·&nbsp; 提交于 2026-05-07 22:43</div>
+            <div class="tag-list"><span class="badge badge-green"><i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i> 已提交</span></div>
+          </div>
+          <div class="hw-actions">
+            <button class="btn btn-sm" onclick="showPage('s-detail')">查看详情</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hci-tip">
+        <div class="hci-tip-label">🟡 HCI 考察点（学生作业列表）</div>
+        <div class="hci-tip-text">
+          <b>①</b> 进度可见性——学生能否一眼判断哪个最紧急？（排序+颜色+倒计时）<br>
+          <b>②</b> 空状态设计——若本周无作业，是否有友好提示，而非空白？<br>
+          <b>③</b> 通知徽章——Tab 上的红点是否正确吸引注意力？<br>
+          <b>④</b> 一致性——"已提交"的图标/颜色与教师端是否保持一致？
+        </div>
+      </div>
+    </div>
+
+    <!-- 学生：作业详情 -->
+    <div class="page" id="page-s-detail">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <button class="btn btn-sm" onclick="showPage('s-list')"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+          <div class="page-title">作业详情</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;align-items:start">
+        <div>
+          <div class="card">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+              <div>
+                <div style="font-size:17px;font-weight:500;margin-bottom:6px">实验三：Web界面设计与实现</div>
+                <div style="display:flex;gap:6px"><span class="badge badge-blue">进行中</span><span class="badge badge-gray">未提交</span></div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="info-row">
+              <span class="info-label"><i class="ti ti-calendar" style="font-size:14px;vertical-align:-2px" aria-hidden="true"></i> 开放时间</span>
+              <span class="info-val">2026-05-14 09:00</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label"><i class="ti ti-alarm" style="font-size:14px;vertical-align:-2px" aria-hidden="true"></i> 截止时间</span>
+              <span class="info-val deadline-ok">2026-05-28 23:59 <span class="badge badge-green" style="margin-left:4px">剩余 14 天</span></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label"><i class="ti ti-users" style="font-size:14px;vertical-align:-2px" aria-hidden="true"></i> 提交方式</span>
+              <span class="info-val">分组提交（每组提交一份）</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label"><i class="ti ti-file-zip" style="font-size:14px;vertical-align:-2px" aria-hidden="true"></i> 文件要求</span>
+              <span class="info-val">压缩包（源码 + 实验报告PDF），不超过 50MB</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div style="font-size:13px;font-weight:500;margin-bottom:8px">作业说明</div>
+            <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.8">
+              请各组按照提供的设计图，独立实现课程作业管理系统的学生端页面，包括：<br>
+              · 作业列表页<br>
+              · 作业详情页<br>
+              · 提交作业页<br><br>
+              要求代码规范、界面美观、交互流畅，并在实验报告中标注各页面体现的 HCI 设计原则（至少各标注 3 条）。
+            </div>
+
+            <div class="divider"></div>
+            <div style="font-size:13px;font-weight:500;margin-bottom:8px">附件下载</div>
+            <div class="submitted-file">
+              <i class="ti ti-file-type-pdf" style="font-size:18px;color:#A32D2D" aria-hidden="true"></i>
+              <div style="flex:1">
+                <div style="font-size:13px">实验三-设计图参考.pdf</div>
+                <div style="font-size:11px;color:var(--color-text-tertiary)">2.3 MB</div>
+              </div>
+              <button class="btn btn-sm"><i class="ti ti-download" aria-hidden="true"></i> 下载</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-upload" style="font-size:15px;color:#185FA5" aria-hidden="true"></i> 提交状态</div>
+            <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px">您尚未提交本次作业</div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="showPage('s-submit')">
+              <i class="ti ti-upload" aria-hidden="true"></i> 去提交作业
+            </button>
+          </div>
+
+          <div class="hci-tip" style="margin-top:12px">
+            <div class="hci-tip-label">🟡 HCI 考察点（详情页）</div>
+            <div class="hci-tip-text">
+              <b>①</b> 信息完整性——学生所需信息（截止/要求/附件）是否都在一页？<br>
+              <b>②</b> 操作可达性——"去提交"按钮是否显眼、是否可直达？<br>
+              <b>③</b> 面包屑/返回——学生能否轻松回到列表页？<br>
+              <b>④</b> 剩余时间展示——是精确时间还是人性化的"剩余N天"更易读？
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 学生：提交作业 -->
+    <div class="page" id="page-s-submit">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <button class="btn btn-sm" onclick="showPage('s-detail')"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+          <div class="page-title">提交作业</div>
+        </div>
+        <div class="page-desc">实验三：Web界面设计与实现</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;align-items:start">
+        <div>
+          <div id="submit-form-area">
+            <div class="card">
+              <div class="form-group">
+                <label class="form-label">上传文件<span class="required">*</span></label>
+                <div class="upload-zone" id="upload-zone">
+                  <div class="upload-icon"><i class="ti ti-cloud-upload" aria-hidden="true"></i></div>
+                  <div class="upload-text">点击选择文件，或将文件拖拽到此处</div>
+                  <div class="upload-hint">仅支持 .zip / .rar，不超过 50MB</div>
+                </div>
+                <div style="margin-top:8px" id="file-preview" style="display:none">
+                  <div class="submitted-file" id="file-item" style="display:none">
+                    <i class="ti ti-file-zip" style="font-size:18px;color:#185FA5" aria-hidden="true"></i>
+                    <div style="flex:1">
+                      <div style="font-size:13px" id="file-name">实验三_第5组.zip</div>
+                      <div style="font-size:11px;color:var(--color-text-tertiary)" id="file-size">18.7 MB</div>
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="removeFile()"><i class="ti ti-trash" style="font-size:12px" aria-hidden="true"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">提交说明</label>
+                <textarea class="form-textarea" placeholder="可以填写本次实验的完成情况、遇到的问题，或给老师的说明（选填）"></textarea>
+                <div class="form-hint">字数建议 50-300 字</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">所在小组<span class="required">*</span></label>
+                <select class="form-input">
+                  <option>第 5 组（张三、李四、王五）</option>
+                  <option>第 6 组</option>
+                </select>
+                <div class="form-hint">请确认小组信息，提交后教师将看到该分组</div>
+              </div>
+
+              <div class="divider"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <button class="btn" onclick="showPage('s-detail')"><i class="ti ti-arrow-left" aria-hidden="true"></i> 返回详情</button>
+                <button class="btn btn-primary" onclick="showSuccess()"><i class="ti ti-send" aria-hidden="true"></i> 确认提交</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="success-area" style="display:none">
+            <div class="card">
+              <div class="success-screen">
+                <div class="success-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
+                <div style="font-size:17px;font-weight:500;margin-bottom:6px">提交成功！</div>
+                <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:4px">提交时间：2026-05-14 16:42:08</div>
+                <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:20px">文件：实验三_第5组.zip</div>
+                <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;font-size:12px;color:var(--color-text-secondary);margin-bottom:20px;text-align:left">
+                  <i class="ti ti-info-circle" style="font-size:14px;vertical-align:-2px;margin-right:4px" aria-hidden="true"></i>
+                  提交成功前请勿关闭页面。如需修改，可在截止时间前重新提交，以最后一次提交为准。
+                </div>
+                <div style="display:flex;gap:8px;justify-content:center">
+                  <button class="btn" onclick="showPage('s-list')"><i class="ti ti-home" aria-hidden="true"></i> 回到作业列表</button>
+                  <button class="btn btn-primary" onclick="resetSubmit()"><i class="ti ti-refresh" aria-hidden="true"></i> 重新提交</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-clipboard-check" style="font-size:15px;color:#185FA5" aria-hidden="true"></i> 提交前检查</div>
+            <div id="checklist">
+              <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div style="font-size:12px;color:var(--color-text-secondary)">已阅读作业要求与附件</div>
+              </div>
+              <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div style="font-size:12px;color:var(--color-text-secondary)">文件格式为 .zip / .rar</div>
+              </div>
+              <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div style="font-size:12px;color:var(--color-text-secondary)">包含源码和实验报告</div>
+              </div>
+              <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div style="font-size:12px;color:var(--color-text-secondary)">文件大小不超过 50MB</div>
+              </div>
+              <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div style="font-size:12px;color:var(--color-text-secondary)">已确认小组信息正确</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hci-tip" style="margin-top:12px">
+            <div class="hci-tip-label">🟡 HCI 考察点（提交页）</div>
+            <div class="hci-tip-text">
+              <b>①</b> 操作可逆性——提交后能否修改？截止前重提是否有提示？<br>
+              <b>②</b> 进度与反馈——上传时是否有进度条？成功后有无明确确认？<br>
+              <b>③</b> 错误预防——提交前检查清单引导用户自查，减少提交错误<br>
+              <b>④</b> 成功状态设计——成功页要显示时间戳、文件名，让用户放心<br>
+              <b>⑤</b> 下一步引导——成功后提供"回列表"/"重提"明确出口
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  var navEl = document.getElementById('nav-' + id);
+  if (navEl) navEl.classList.add('active');
+}
+
+function selectRole(role) {
+  document.getElementById('role-teacher').classList.toggle('selected', role === 'teacher');
+  document.getElementById('role-student').classList.toggle('selected', role === 'student');
+}
+
+function showErrDemo() {
+  var err = document.getElementById('err-msg');
+  err.style.display = 'flex';
+  setTimeout(function() { err.style.display = 'none'; }, 3000);
+}
+
+function toggleCheck(el) {
+  var box = el.querySelector('.check-box');
+  if (box.classList.contains('checked')) {
+    box.classList.remove('checked');
+    box.innerHTML = '';
+  } else {
+    box.classList.add('checked');
+    box.innerHTML = '<i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i>';
+  }
+}
+
+function showSuccess() {
+  document.getElementById('submit-form-area').style.display = 'none';
+  document.getElementById('success-area').style.display = 'block';
+}
+
+function resetSubmit() {
+  document.getElementById('submit-form-area').style.display = 'block';
+  document.getElementById('success-area').style.display = 'none';
+}
+
+function removeFile() {
+  document.getElementById('file-item').style.display = 'none';
+}
+</script>
